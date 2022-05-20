@@ -1,33 +1,26 @@
 """contract.cairo test file."""
-import os
-
 import pytest
-from starkware.starknet.testing.starknet import Starknet
-from starkware.starknet.compiler.compile import compile_starknet_files
 from utils import toUint256, splitToTwoUint256, fromUint256
 
-# The path to the contract source code.
-CONTRACT_FILE = os.path.join("HashToXMD", "hash_to_field.cairo")
 
-
-# The testing library uses python's asyncio. So the following
-# decorator and the ``async`` keyword are needed.
 @pytest.mark.asyncio
-async def test_hash():
-    # Create a new Starknet class that simulates the StarkNet
-    # system.
-    starknet = await Starknet.empty()
+async def test_small_string(hash_factory):
+    contract = hash_factory
 
-    # Deploy the contract.
+    num = 0
+    num_256 = toUint256(num)
 
-    contract_def = compile_starknet_files(
-        files=[CONTRACT_FILE], disable_hint_validation=True
-    )
+    print(num_256)
+    execution_info = await contract.hash_to_fp_XMDSHA256([num]).invoke()
     
-    contract = await starknet.deploy(
-        contract_def=contract_def
-    )
-    
+    print(hex(execution_info.result[0].low))
+    print(hex(execution_info.result[0].high))
+    res = hex(fromUint256(execution_info.result[0]))
+    assert res == '0xbc36789e7a1e281436464229828f817d6612f7b477d66591ff96a9e064bcc98a'
+
+@pytest.mark.asyncio
+async def test_hash(hash_factory):
+    contract = hash_factory
     # Test the function
     sig = int('0x8434e45af135f363b04b792c1d77b83e36ef66829b0a09f7eed058103429f0e7f759ebf6d001cf73e9138f5b7a7f04b602c4167390c323432562d6367e09169422707a9778eba260c4d6434ea5e1d2c81462a4e3cd430990aebc593f4ae7517c')
     round = 1657527
@@ -38,7 +31,7 @@ async def test_hash():
     execution_info = await contract.hash_to_fp_XMDSHA256([one, two, three]).invoke()
     result_1 = execution_info.result[0]
 
-    print(hex(fromUint256(result_1)))
+    print(result_1)
     assert fromUint256(result_1) == 1
 
     # assert Uint256(low=41007414709178760838645821390777687163, high=66617985427134803333752300516846126658) == 1
