@@ -3,6 +3,14 @@ from typing import Callable, List, Tuple, Any, NamedTuple
 from functools import reduce
 from enum import Enum
 
+
+def split(num: int, num_bits_shift: int = 128, length: int = 3) -> List[int]:
+    a = []
+    for _ in range(length):
+        a.append( num & ((1 << num_bits_shift) - 1) )
+        num = num >> num_bits_shift 
+    return tuple(a)
+
 shift = 2 ** 128
 all_ones = 2 ** 128 - 1
 def toUint256(num : int):
@@ -14,12 +22,12 @@ def toUint256(num : int):
 shift_256 = 2 ** 256
 all_ones_256 = 2 ** 256 - 1
 
-def splitToTwoUint256(num : int):
+def splitUint768(num : int):
     low = toUint256(num & all_ones_256)
     mid = toUint256((num << 256) & all_ones_256)
     high = toUint256((num << 512) & all_ones_256)
 
-    return (low, mid, high)
+    return [low, mid, high]
 
 def fromUint256(num):
     return num.low + num.high * shift
@@ -37,4 +45,6 @@ def bytes_to_int(word: bytes, encoding: Encoding = Encoding.BIG) -> int:
 bytes_to_int_little: Callable[[bytes], int] = lambda word: int.from_bytes(word, "little")
 bytes_to_int_big: Callable[[bytes], int] = lambda word: int.from_bytes(word, "big")
 
-int_to_uint_256 : Callable[[int], tuple] = lambda word : toUint256(word)
+int_to_uint_256 : Callable[[int], tuple] = lambda word : split(word, 128, 2)
+
+int_to_bytes_32_big : Callable[[int], bytes] = lambda word: word.to_bytes(32, "big")
