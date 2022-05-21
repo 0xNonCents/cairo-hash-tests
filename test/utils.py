@@ -32,7 +32,6 @@ def splitUint768(num : int):
 def fromUint256(num):
     return num.low + num.high * shift
 
-
 class Encoding(Enum):
     LITTLE: str = 'little'
     BIG: str = 'big'
@@ -48,3 +47,40 @@ bytes_to_int_big: Callable[[bytes], int] = lambda word: int.from_bytes(word, "bi
 int_to_uint_256 : Callable[[int], tuple] = lambda word : split(word, 128, 2)
 
 int_to_bytes_32_big : Callable[[int], bytes] = lambda word: word.to_bytes(32, "big")
+
+bytes_32_to_uint_256 : Callable[[bytes], tuple] = lambda word : split(bytes_to_int_big(word), 128, 2)
+
+def bytes_to_uint256(input : bytes, bytes_per_uint256 : int = 32):
+    length_of_bytes = len(input)
+
+    total_chunks, loose_bytes = divmod(length_of_bytes ,bytes_per_uint256 )
+    chunks = []
+    for x in range(total_chunks):
+        if x == 0:
+            chunks.append(bytes_32_to_uint_256(input[:32]))
+        else:
+            chunks.append(bytes_32_to_uint_256(input[(x - 1) * 32 : x * 32]))
+    if loose_bytes > 0:
+        chunks.append(bytes_32_to_uint_256(input[total_chunks * bytes_per_uint256:]))
+    return chunks
+
+def pad_bytes(input : bytes, bytes_per_uint256 : int = 32):
+    length_of_bytes = len(input)
+    
+    missing_bytes = bytes_per_uint256 - length_of_bytes
+    
+    if missing_bytes == 1:
+        return input + b'\x86'
+    elif missing_bytes == 2:
+        return input + b'\x06\x80'
+    
+    
+    for x in range(missing_bytes):
+        if x == 0 :
+            input = input + b'\x06'
+        elif x == missing_bytes:
+            input = input + b'\x80'
+        else:
+            input = input + b'\x00'
+    
+    return input

@@ -1,8 +1,11 @@
 """contract.cairo test file."""
+from xml import dom
+from numpy import full
 import pytest
 from web3 import Web3
-from utils import  concat_arr, bytes_to_int_big,int_to_uint_256
+from utils import  concat_arr, bytes_to_int_big,int_to_uint_256, bytes_to_uint256
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_hash_uint256(hash_factory):
     contract = hash_factory
@@ -13,8 +16,7 @@ async def test_hash_uint256(hash_factory):
     
     web3_computed_hash = Web3.keccak(concat_arr(keccak_input)).hex()
     
-    input = list(map(bytes_to_int_big, keccak_input))
-    input_as_uint256 = list(map(int_to_uint_256,input)) 
+    input_as_uint256 = bytes_to_uint256(keccak_input[0])
     test_keccak_call = await contract.keccak_uint256(
        input_as_uint256
     ).call()
@@ -25,6 +27,7 @@ async def test_hash_uint256(hash_factory):
 
     assert output == web3_computed_hash
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_hash_uint256_big(hash_factory):
     contract = hash_factory
@@ -47,9 +50,9 @@ async def test_hash_uint256_big(hash_factory):
     output = '0x' + hash.high.to_bytes(16, 'big').hex() + hash.low.to_bytes(16, 'big').hex()
     assert output == web3_computed_hash
 
-
+@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_hash_felt(hash_factory):
+async def test_hash_multi_part(hash_factory):
     contract = hash_factory
 
     num = 0
@@ -58,20 +61,49 @@ async def test_hash_felt(hash_factory):
         b'\xf9\x02\x18\xa0\x03\xb0\x16\xcc',
         b'\x93\x87\xcb\x3c\xef\x86\xd9\xd4',
         b'\xaf\xb5\x2c\x37\x89\x52\x8c\x53',
-        b'\x0c\x00\x20\x87\x95\xac\x93\x7c',
-        b'\x00\x00\x00\x00\x00\x00\x00\x77',
+        b'\x0c\x00\x20\x87\x95\xac\x93\x7c'
     ]
     
     web3_computed_hash = Web3.keccak(concat_arr(keccak_input)).hex()
     
-    input = list(map(bytes_to_int_big, keccak_input))
-    test_keccak_call = await contract.keccak_felt(
-       input
+    
+    input_as_uint256 = bytes_to_uint256(concat_arr(keccak_input))
+    
+    test_keccak_call = await contract.keccak_uint256(
+       input_as_uint256
     ).call()
 
     hash = test_keccak_call.result.res
-    
-    output = '0x' + hash.low.to_bytes(16, 'big').hex() + hash.high.to_bytes(16, 'big').hex()
+    output = '0x' + hash.high.to_bytes(16, 'big').hex() + hash.low.to_bytes(16, 'big').hex()
+    assert output == web3_computed_hash
 
+
+
+@pytest.mark.asyncio
+async def test_hash_uint256_big_multiple_parts_odd_bytes(hash_factory):
+    contract = hash_factory
+    # Test the function
+
+    ## Hex input
+    z_pad =  bytes.fromhex("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+    msg = bytes.fromhex("27c77ad9814f4e33e9d640482ccb7996eb095b0027384948140597fb9901ad63")
+    l_i_b_str =  bytes.fromhex("0100")
+    I20SP = bytes.fromhex("00")
+    domain = bytes.fromhex("424c535f5349475f424c53313233383147325f584d443a5348412d3235365f535357555f524f5f4e554c5f")
+    domainLen = bytes.fromhex("2b")
+    
+    full_bytes = z_pad + msg + l_i_b_str + I20SP + domain + domainLen
+
+    web3_computed_hash = Web3.keccak(full_bytes).hex()
+
+    input_as_uint256 = bytes_to_uint256(full_bytes)
+    
+    print(input_as_uint256)
+    test_keccak_call = await contract.keccak_uint256(
+       input_as_uint256
+    ).call()
+
+    hash = test_keccak_call.result.res
+    output = '0x' + hash.high.to_bytes(16, 'big').hex() + hash.low.to_bytes(16, 'big').hex()
     assert output == web3_computed_hash
 
