@@ -1,6 +1,4 @@
 """contract.cairo test file."""
-from xml import dom
-from numpy import full
 import pytest
 from web3 import Web3
 from utils import  concat_arr, bytes_to_int_big,int_to_uint_256, bytes_to_uint256, bytes_as_int_arr
@@ -20,7 +18,6 @@ async def compare_hashes(keccak_input, contract):
     
     assert output == web3_computed_hash
 
-    print( f'{keccak_input}to passed')
 
 @pytest.mark.skip
 @pytest.mark.asyncio
@@ -110,7 +107,6 @@ async def test_hash_multi_part(hash_factory):
     
     web3_computed_hash = Web3.keccak(concat_arr(keccak_input)).hex()
     
-    
     input_as_uint256 = bytes_to_uint256(concat_arr(keccak_input))
     
     test_keccak_call = await contract.keccak_uint256(
@@ -123,7 +119,7 @@ async def test_hash_multi_part(hash_factory):
 
 
 @pytest.mark.asyncio
-async def test_hash_multiple_parts_odd_bytes(hash_factory):
+async def test_hash_uint256_big_multiple_parts_odd_bytes(hash_factory):
     contract = hash_factory
     # Test the function
 
@@ -135,23 +131,18 @@ async def test_hash_multiple_parts_odd_bytes(hash_factory):
     domain = bytes.fromhex("424c535f5349475f424c53313233383147325f584d443a5348412d3235365f535357555f524f5f4e554c5f")
     domainLen = bytes.fromhex("2b")
     
-    full_bytes = bytes.fromhex("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000027c77ad9814f4e33e9d640482ccb7996eb095b0027384948140597fb9901ad63010000424c535f5349475f424c53313233383147325f584d443a5348412d3235365f535357555f524f5f4e554c5f2b")
-    # full_bytes = z_pad + msg + l_i_b_str + I20SP + domain + domainLen
-    print(full_bytes)
-    full_bytes = concat_arr([z_pad, msg, l_i_b_str, I20SP, domain, domainLen])
-
-    print(" ")
-    print(full_bytes)
+    full_bytes = z_pad + msg + l_i_b_str + I20SP + domain + domainLen
+    
     web3_computed_hash = Web3.keccak(full_bytes).hex()
 
     input_as_64_bit = bytes_as_int_arr(full_bytes)
     
-    print(len(full_bytes))
     test_keccak_call = await contract.keccak(
        input_as_64_bit, len(full_bytes)
     ).call()
 
     hash = test_keccak_call.result.res
     output = '0x' + hash.high.to_bytes(16, 'big').hex() + hash.low.to_bytes(16, 'big').hex()
+
     assert output == web3_computed_hash
 

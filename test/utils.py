@@ -104,6 +104,6 @@ def bytes_as_int_arr(input : bytes, bytes_per_int : int = 8):
         min = chunks * bytes_per_int
         max = chunks * bytes_per_int + extra
 
-        a.append(bytes_to_int_big(input[min : max]))
+        a.append(bytes_to_int_little(input[min : max]))
 
     return a
