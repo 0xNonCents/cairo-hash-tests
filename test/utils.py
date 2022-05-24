@@ -13,6 +13,7 @@ def split(num: int, num_bits_shift: int = 128, length: int = 3) -> List[int]:
 
 shift = 2 ** 128
 all_ones = 2 ** 128 - 1
+
 def toUint256(num : int):
     low = num & all_ones
     high = (num << 128) & all_ones
@@ -84,3 +85,19 @@ def pad_bytes(input : bytes, bytes_per_uint256 : int = 32):
             input = input + b'\x00'
     
     return input
+
+
+
+def bytes_as_int_arr(input : bytes):
+
+
+    a = []
+    input_length = len(input)
+
+    for x in range(input_length):
+        if x == 0:
+            a.append(bytes_to_int_big(input[:1]))
+        else:
+            a.append(bytes_to_int_big(input[(x - 1) : x]))
+    
+    return a
