@@ -88,16 +88,22 @@ def pad_bytes(input : bytes, bytes_per_uint256 : int = 32):
 
 
 
-def bytes_as_int_arr(input : bytes):
-
+def bytes_as_int_arr(input : bytes, bytes_per_int : int = 8):
 
     a = []
     input_length = len(input)
+    chunks, extra = divmod(input_length, bytes_per_int)
 
-    for x in range(input_length):
+    for x in range(chunks):
         if x == 0:
-            a.append(bytes_to_int_big(input[:1]))
+            a.append(bytes_to_int_little(input[:bytes_per_int]))
         else:
-            a.append(bytes_to_int_big(input[(x - 1) : x]))
+            a.append(bytes_to_int_little(input[x * bytes_per_int : (x + 1) * bytes_per_int]))
     
+    if extra > 0:
+        min = chunks * bytes_per_int
+        max = chunks * bytes_per_int + extra
+
+        a.append(bytes_to_int_big(input[min : max]))
+
     return a

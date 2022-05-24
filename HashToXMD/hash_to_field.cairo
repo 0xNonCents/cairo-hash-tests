@@ -10,14 +10,14 @@ from starkware.cairo.common.cairo_keccak.keccak import (
 @view
 func keccak{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, bitwise_ptr : BitwiseBuiltin*,
-        range_check_ptr}(input_len : felt, input : felt*) -> (res : Uint256):
+        range_check_ptr}(input_len : felt, input : felt*, n_bytes : felt) -> (res : Uint256):
     # expand message via SHA256XMD,
     alloc_locals
     let (local keccak_ptr_start) = alloc()
     let keccak_ptr = keccak_ptr_start
 
     # append bytes to final string based on desired length, can be fixed for our purposes
-    let (res) = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=input, n_bytes=input_len)
+    let (res) = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=input, n_bytes=n_bytes)
 
     # Call finalize once at the end to verify the soundness of the execution
     finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr)
