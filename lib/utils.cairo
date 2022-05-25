@@ -37,7 +37,7 @@ func get_target{range_check_ptr}(bits : felt) -> (res : Uint256):
 end
 
 # Split a Uint256 into 8 32bit words ugly
-func prepare_hash{range_check_ptr}(inp : Uint256) -> (res : felt*):
+func Uint256_to_32bit{range_check_ptr}(inp : Uint256) -> (res : felt*):
     alloc_locals
     let (res : felt*) = alloc()
     let (lolo, lohi) = unsigned_div_rem(inp.low, 2 ** 64)

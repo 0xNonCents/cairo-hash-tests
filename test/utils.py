@@ -49,7 +49,8 @@ int_to_uint_256 : Callable[[int], tuple] = lambda word : split(word, 128, 2)
 
 int_to_bytes_32_big : Callable[[int], bytes] = lambda word: word.to_bytes(32, "big")
 
-bytes_32_to_uint_256 : Callable[[bytes], tuple] = lambda word : split(bytes_to_int_big(word), 128, 2)
+bytes_32_to_uint_256_big : Callable[[bytes], tuple] = lambda word : split(bytes_to_int_big(word), 128, 2)
+bytes_32_to_uint_256_little : Callable[[bytes], tuple] = lambda word : split(bytes_to_int_little(word), 128, 2)
 
 def bytes_to_uint256(input : bytes, bytes_per_uint256 : int = 32):
     length_of_bytes = len(input)
@@ -58,11 +59,11 @@ def bytes_to_uint256(input : bytes, bytes_per_uint256 : int = 32):
     chunks = []
     for x in range(total_chunks):
         if x == 0:
-            chunks.append(bytes_32_to_uint_256(input[:32]))
+            chunks.append(bytes_32_to_uint_256_big(input[:32]))
         else:
-            chunks.append(bytes_32_to_uint_256(input[(x - 1) * 32 : x * 32]))
+            chunks.append(bytes_32_to_uint_256_big(input[x * 32 : (x + 1) * 32]))
     if loose_bytes > 0:
-        chunks.append(bytes_32_to_uint_256(input[total_chunks * bytes_per_uint256:]))
+        chunks.append(bytes_32_to_uint_256_big(input[total_chunks * bytes_per_uint256:]))
     return chunks
 
 def pad_bytes(input : bytes, bytes_per_uint256 : int = 32):

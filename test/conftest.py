@@ -16,7 +16,8 @@ async def starknet_factory():
 
 
 # The path to the contract source code.
-CONTRACT_FILE = os.path.join("HashToXMD", "hash_to_field.cairo")
+HASH_CONTRACT_FILE = os.path.join("contracts", "keccak_hash.cairo")
+HASH_TO_FP_CONTRACT_FILE = os.path.join("contracts", "hash_to_fp.cairo")
 
 @pytest.fixture(scope="module")
 async def hash_factory(starknet_factory):
@@ -27,7 +28,25 @@ async def hash_factory(starknet_factory):
     # Deploy the contract.
 
     contract_def = compile_starknet_files(
-        files=[CONTRACT_FILE], disable_hint_validation=True
+        files=[HASH_CONTRACT_FILE], disable_hint_validation=True
+    )
+    
+    contract = await starknet.deploy(
+        contract_def=contract_def
+    )
+
+    return contract
+    
+@pytest.fixture(scope="module")
+async def hash_to_fp_factory(starknet_factory):
+    # Create a new Starknet class that simulates the StarkNet
+    # system.
+    starknet = starknet_factory
+
+    # Deploy the contract.
+
+    contract_def = compile_starknet_files(
+        files=[HASH_TO_FP_CONTRACT_FILE], disable_hint_validation=True
     )
     
     contract = await starknet.deploy(
