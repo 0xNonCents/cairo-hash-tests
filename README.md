@@ -1,38 +1,7 @@
-# Demo
+# Cairo Hash tests
 
-1. pip install starknet-devnet
-2. mkdir build
-3. Run `make compile_deploy` in a terminal.
-4. Export the printed contract address: `export CONTRACT_ADDR=<CONTRACT_ADDR>
-5. Run `make demo` in a separate terminal.
+This is a collection of contracts, tests and utilites that are being developed as I learn about the builtin hash libraries in cairo. The current hash alorithm being used is keccak however sha256 will be added when that is made available.
 
-# Querying for blocks:
+`tests/test_contract.py` demonstrates how to hash various input types (felt, uint256, 64 bit integers) using the different available functions. From exploring these different functions I have concluded that keccak/keccak_bigend are the most flexible for inputs the hash algorithm that are of odd length. Also it is important to mind the endianess of your input! For example keccak_bigend returns a big endian variable the input is still expected as little endian!
 
-1. get an api-key by registering to getblock.io.
-2. get the block hash of the block you want to query (here: 0)
-
-```
-curl --location --request POST 'https://btc.getblock.io/mainnet/' \                         (py39)
-      --header 'x-api-key: <API_KEY>' \
-      --header 'Content-Type: application/json' \
-      --data-raw '{"jsonrpc": "2.0",
-  "method": "getblockhash",
-  "params": [0],
-  "id": "getblock.io"}'
-```
-
-3. get the block by hash
-
-```
-curl --location --request POST 'https://btc.getblock.io/mainnet/' \                         (py39)
-      --header 'x-api-key: <API_KEY>' \
-      --header 'Content-Type: application/json' \
-      --data-raw '{"jsonrpc": "2.0",
-  "method": "getblock",
-  "params": ["000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"],
-  "id" : "getblock.io"}'
-```
-
-# References
-
-See https://en.bitcoin.it/wiki/Block_hashing_algorithm for block hashing algorithm
+Lastly please take advantage of `test/utils.py`for usefull methods to handle the input.
