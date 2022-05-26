@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256, split_64
-from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
+from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, keccak, finalize_keccak
 from lib.utils import Uint256_to_32bit
 
 func Uint256_to_64bit{range_check_ptr}(input : Uint256) -> (
@@ -56,10 +56,27 @@ func hash_to_fp{
     assert [b_0 + 17] = 12208205451910991
 
     # append bytes to final string based on desired length, can be fixed for our purposes
-    let (res) = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=b_0, n_bytes=143)
+    let (b_0_final) = keccak{keccak_ptr=keccak_ptr}(inputs=b_0, n_bytes=143)
+
+    # b_1 = H(b_0 || I2OSP(1, 1) || DST_prime)
+    let (b_0_first, b_0_second, b_0_third, b_0_fourth) = Uint256_to_64bit(b_0_final)
+    let b_1 : felt* = alloc()
+
+    assert [b_1] = b_0_first
+    assert [b_1 + 1] = b_0_second
+    assert [b_1 + 2] = b_0_third
+    assert [b_1 + 3] = b_0_fourth
+    assert [b_1 + 4] = 5136728518877266433
+    assert [b_1 + 5] = 4049635677368500831
+    assert [b_1 + 6] = 4198565794565736241
+    assert [b_1 + 7] = 6860729571969419347
+    assert [b_1 + 8] = 6867798526170452819
+    assert [b_1 + 9] = 186282431822
+
+    let (b_1_final) = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=b_1, n_bytes=77)
 
     # Call finalize once at the end to verify the soundness of the execution
     finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr)
 
-    return (res)
+    return (b_1_final)
 end

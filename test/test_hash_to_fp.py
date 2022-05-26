@@ -3,7 +3,7 @@ from web3 import Web3
 from utils import bytes_32_to_uint_256_little, bytes_as_int_arr
 
 @pytest.mark.asyncio
-async def test_hash_uint256(hash_to_fp_factory):
+async def test_hash_to_fp(hash_to_fp_factory):
     contract = hash_to_fp_factory
 
     z_pad =  bytes.fromhex("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
@@ -12,13 +12,14 @@ async def test_hash_uint256(hash_to_fp_factory):
     I20SP = bytes.fromhex("00")
     domain = bytes.fromhex("424c535f5349475f424c53313233383147325f584d443a5348412d3235365f535357555f524f5f4e554c5f")
     domainLen = bytes.fromhex("2b")
+    I2OSP_1 = bytes.fromhex("01")
 
-
-    full_bytes = z_pad + msg + l_i_b_str + I20SP + domain + domainLen
-    print(len(full_bytes))
-    web3_computed_hash = Web3.keccak(full_bytes).hex()
+    b_0_bytes = z_pad + msg + l_i_b_str + I20SP + domain + domainLen
+    b_0 = Web3.keccak(b_0_bytes)
     
-    print(bytes_as_int_arr(full_bytes))
+    b_1_bytes = b_0 + I2OSP_1 + domain + domainLen
+    b_1 = Web3.keccak(b_1_bytes).hex()
+    
     msg_uint256 = bytes_32_to_uint_256_little(msg)
 
     test_keccak_call = await contract.hash_to_fp(
@@ -29,4 +30,4 @@ async def test_hash_uint256(hash_to_fp_factory):
     
     output = '0x' + hash.high.to_bytes(16, 'big').hex() + hash.low.to_bytes(16, 'big').hex()
 
-    assert output == web3_computed_hash
+    assert output == b_1
