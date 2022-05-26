@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.uint256 import Uint256, split_64
+from starkware.cairo.common.uint256 import Uint256, split_64, uint256_xor
 from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, keccak, finalize_keccak
 from lib.utils import Uint256_to_32bit
 
@@ -14,6 +14,29 @@ func Uint256_to_64bit{range_check_ptr}(input : Uint256) -> (
     let (second_highest : felt, highest : felt) = split_64(input.low)
 
     return (one=second_highest, two=highest, three=lowest, four=second_lowest)
+end
+
+func hash_b_i{keccak_ptr : felt*, range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(
+        b_0 : Uint256, prev_b_i : Uint256, index : felt) -> (b_i : Uint256):
+    alloc_locals
+    let (temp : Uint256) = uint256_xor(a=b_0, b=prev_b_i)
+
+    let (xor_first, xor_second, xor_third, xor_fourth) = Uint256_to_64bit(temp)
+    let b_i : felt* = alloc()
+    assert [b_i] = xor_first
+    assert [b_i + 1] = xor_second
+    assert [b_i + 2] = xor_third
+    assert [b_i + 3] = xor_fourth
+    assert [b_i + 4] = 5136728518877266433 + index
+    assert [b_i + 5] = 4049635677368500831
+    assert [b_i + 6] = 4198565794565736241
+    assert [b_i + 7] = 6860729571969419347
+    assert [b_i + 8] = 6867798526170452819
+    assert [b_i + 9] = 186282431822
+
+    let (b_i_final) = keccak{keccak_ptr=keccak_ptr}(inputs=b_i, n_bytes=77)
+
+    return (b_i_final)
 end
 
 # follows hash_to_fp_XMDSHA256 except we use keccak pending a SHA256 builtin
@@ -74,6 +97,19 @@ func hash_to_fp{
     assert [b_1 + 9] = 186282431822
 
     let (b_1_final) = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=b_1, n_bytes=77)
+
+    # b_i = H(strxor(b_0, b_(i - 1)) || I2OSP(i, 1) || DST_prime)
+
+    let (b_i_0 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(
+        b_0=b_0_final, prev_b_i=b_1_final, index=0)
+    let (b_i_1 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_0, index=1)
+    let (b_i_2 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_1, index=2)
+    let (b_i_3 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_2, index=3)
+    let (b_i_4 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_3, index=4)
+    let (b_i_5 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_4, index=5)
+    let (b_i_6 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_5, index=6)
+    let (b_i_7 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_6, index=7)
+    let (b_i_8 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_7, index=8)
 
     # Call finalize once at the end to verify the soundness of the execution
     finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr)

@@ -31,5 +31,23 @@ def get_d1_parts():
 
     print(hex(temp))
 
+def get_d_i_parts():
+    d_0 = bytes.fromhex("32a697876d3a4637ba7b3aaf846ccf39669401397351539576fd2dbabb3eceef")
+    domain = bytes.fromhex("424c535f5349475f424c53313233383147325f584d443a5348412d3235365f535357555f524f5f4e554c5f")
+    domainLen = bytes.fromhex("2b")
+    
+
+    print ("domain prime" + str(bytes_as_int_arr(domain + domainLen)))
+    
+    # Encoding of integer does not matter here
+    print("i = 0, " +str(bytes_as_int_arr(int(1).to_bytes(1, "little")  + domain + domainLen) ))
+    print("i = 1, " +str(bytes_as_int_arr(int(2).to_bytes(1, "little")  + domain + domainLen) ))
+    print("i = 2, " +str(bytes_as_int_arr(int(3).to_bytes(1, "little")  + domain + domainLen) ))
+    print("i = 3, " +str(bytes_as_int_arr(int(4).to_bytes(1, "little")  + domain + domainLen) ))
+
+    print(len(d_0 + int(1).to_bytes(1, "little") + domain + domainLen))
+
+
 get_d0_parts()
 get_d1_parts()
+get_d_i_parts()
