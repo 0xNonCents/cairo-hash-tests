@@ -44,7 +44,9 @@ end
 @view
 func hash_to_fp{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, bitwise_ptr : BitwiseBuiltin*,
-        range_check_ptr}(msg : Uint256) -> (res : Uint256):
+        range_check_ptr}(msg : Uint256) -> (
+        one : Uint256, two : Uint256, three : Uint256, four : Uint256, five : Uint256,
+        six : Uint256, seven : Uint256, eight : Uint256):
     # inputs
     # # msg of bytes, 32 byte string
     # # domain, string such as "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_"
@@ -96,23 +98,21 @@ func hash_to_fp{
     assert [b_1 + 8] = 6867798526170452819
     assert [b_1 + 9] = 186282431822
 
-    let (b_1_final) = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=b_1, n_bytes=77)
+    let (b_1_final) = keccak{keccak_ptr=keccak_ptr}(inputs=b_1, n_bytes=77)
 
     # b_i = H(strxor(b_0, b_(i - 1)) || I2OSP(i, 1) || DST_prime)
 
     let (b_i_0 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(
         b_0=b_0_final, prev_b_i=b_1_final, index=0)
-    let (b_i_1 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_0, index=1)
-    let (b_i_2 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_1, index=2)
-    let (b_i_3 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_2, index=3)
-    let (b_i_4 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_3, index=4)
-    let (b_i_5 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_4, index=5)
-    let (b_i_6 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_5, index=6)
-    let (b_i_7 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_6, index=7)
-    let (b_i_8 : Uint256) = hash_b_i(b_0=b_0_final, prev_b_i=b_i_7, index=8)
+    let (b_i_1 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(b_0=b_0_final, prev_b_i=b_i_0, index=1)
+    let (b_i_2 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(b_0=b_0_final, prev_b_i=b_i_1, index=2)
+    let (b_i_3 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(b_0=b_0_final, prev_b_i=b_i_2, index=3)
+    let (b_i_4 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(b_0=b_0_final, prev_b_i=b_i_3, index=4)
+    let (b_i_5 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(b_0=b_0_final, prev_b_i=b_i_4, index=5)
+    let (b_i_6 : Uint256) = hash_b_i{keccak_ptr=keccak_ptr}(b_0=b_0_final, prev_b_i=b_i_5, index=6)
 
     # Call finalize once at the end to verify the soundness of the execution
     finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr)
 
-    return (b_1_final)
+    return (b_1_final, b_i_0, b_i_1, b_i_2, b_i_3, b_i_4, b_i_5, b_i_6)
 end

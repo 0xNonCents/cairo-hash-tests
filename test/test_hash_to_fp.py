@@ -1,6 +1,10 @@
 import pytest
 from web3 import Web3
 from utils import bytes_32_to_uint_256_little, bytes_as_int_arr
+from utils_hash_to_fp import bitwise_or_bytes
+
+
+
 
 @pytest.mark.asyncio
 async def test_hash_to_fp(hash_to_fp_factory):
@@ -18,7 +22,14 @@ async def test_hash_to_fp(hash_to_fp_factory):
     b_0 = Web3.keccak(b_0_bytes)
     
     b_1_bytes = b_0 + I2OSP_1 + domain + domainLen
-    b_1 = Web3.keccak(b_1_bytes).hex()
+    b_1 = Web3.keccak(b_1_bytes)
+
+    b_i = b_1
+    total = b''
+    for i in range (8):
+        temp = Web3.keccak(bitwise_or_bytes(b_0, b_i) + int(1 + i).to_bytes(1, "little") + domain + domainLen)
+        total = total + b_i
+        b_i = temp
     
     msg_uint256 = bytes_32_to_uint_256_little(msg)
 
@@ -26,8 +37,21 @@ async def test_hash_to_fp(hash_to_fp_factory):
        msg_uint256
     ).call()
 
-    hash = test_keccak_call.result.res
+    hashes = []
     
-    output = '0x' + hash.high.to_bytes(16, 'big').hex() + hash.low.to_bytes(16, 'big').hex()
+    hashes.append(test_keccak_call.result.one)
+    hashes.append(test_keccak_call.result.two)
+    hashes.append(test_keccak_call.result.three)
+    hashes.append(test_keccak_call.result.four)
+    hashes.append(test_keccak_call.result.five)
+    hashes.append(test_keccak_call.result.six)
+    hashes.append(test_keccak_call.result.seven)
+    hashes.append(test_keccak_call.result.eight)
+    
+    res = ''
+    for hash in hashes:
+        res = res + hash.low.to_bytes(16, 'little').hex() + hash.high.to_bytes(16, 'little').hex()
 
-    assert output == b_1
+    output = res
+
+    assert output == total.hex()

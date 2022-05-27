@@ -47,7 +47,5 @@ def get_d_i_parts():
 
     print(len(d_0 + int(1).to_bytes(1, "little") + domain + domainLen))
 
-
-get_d0_parts()
-get_d1_parts()
-get_d_i_parts()
+def bitwise_or_bytes(var, key):
+    return bytes(a ^ b for a, b in zip(var, key))
