@@ -3,9 +3,6 @@ from web3 import Web3
 from utils import bytes_32_to_uint_256_little, bytes_as_int_arr
 from utils_hash_to_fp import bitwise_or_bytes
 
-
-
-
 @pytest.mark.asyncio
 async def test_hash_to_fp(hash_to_fp_factory):
     contract = hash_to_fp_factory
@@ -33,7 +30,7 @@ async def test_hash_to_fp(hash_to_fp_factory):
     
     msg_uint256 = bytes_32_to_uint_256_little(msg)
 
-    test_keccak_call = await contract.hash_to_fp(
+    test_keccak_call = await contract.expand_sha_xmd(
        msg_uint256
     ).call()
 

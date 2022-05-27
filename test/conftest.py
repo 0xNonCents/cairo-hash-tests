@@ -17,7 +17,7 @@ async def starknet_factory():
 
 # The path to the contract source code.
 HASH_CONTRACT_FILE = os.path.join("contracts", "keccak_hash.cairo")
-HASH_TO_FP_CONTRACT_FILE = os.path.join("contracts", "hash_to_fp.cairo")
+HASH_TO_FP_CONTRACT_FILE = os.path.join("contracts", "expand_msg_SHA_XMD.cairo")
 
 @pytest.fixture(scope="module")
 async def hash_factory(starknet_factory):

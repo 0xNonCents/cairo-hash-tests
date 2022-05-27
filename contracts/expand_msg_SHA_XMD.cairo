@@ -42,7 +42,7 @@ end
 # follows hash_to_fp_XMDSHA256 except we use keccak pending a SHA256 builtin
 # expects msg to be big endian
 @view
-func hash_to_fp{
+func expand_sha_xmd{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, bitwise_ptr : BitwiseBuiltin*,
         range_check_ptr}(msg : Uint256) -> (
         one : Uint256, two : Uint256, three : Uint256, four : Uint256, five : Uint256,
